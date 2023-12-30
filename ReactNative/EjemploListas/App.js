@@ -30,26 +30,26 @@ export default function App() {
     esNuevo = true;
   }
   //validacion de datos duplicados
-  let existePersona=()=>{
-    for (let i=0;i<personas.length;i++){
-      if(personas[i].cedula==txtCedula){
+  let existePersona = () => {
+    for (let i = 0; i < personas.length; i++) {
+      if (personas[i].cedula == txtCedula) {
         return true;
       }
     }
     return false;
   }
 
-    //guardar persona
+  //guardar persona
 
   let guardarPersona = () => {
     if (esNuevo) {
-      if(existePersona){
-        Alert("INFO","Ya existe la persona con la cedula :"+txtCedula)
-      }else{
+      if (existePersona) {
+        Alert("INFO", "Ya existe la persona con la cedula :" + txtCedula)
+      } else {
         let persona = { nombre: txtNombre, apellido: txtApellido, cedula: txtCedula };
         personas.push(persona);
       }
-   
+
     } else {
       personas[indiceSeleccionado].nombre = txtNombre;
       personas[indiceSeleccionado].apellido = txtApellido;
@@ -124,12 +124,16 @@ export default function App() {
         <TextInput style={styles.cajaTexto}
           value={txtApellido}
           placeholder='Ingrese apellido'
-          onChangeText={setTxtApellido}
+          onChangeText={txt=>{
+            setTxtApellido(txt)
+          }}
         />
         <TextInput style={styles.cajaTexto}
           value={txtNombre}
           placeholder='Ingrese nombre'
-          onChangeText={setTxtNombre}
+          onChangeText={txt => {
+            setTxtNombre(txt);
+          }}
         />
 
         <View style={styles.areaBotones}>
@@ -164,7 +168,7 @@ export default function App() {
                 persona={elemento.item}
               />);
           }}
-          keyExtractor={(item) => {
+          keyExtractor={item => {
             return item.cedula;
           }}
         />

@@ -1,5 +1,5 @@
 import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View, FlatList, Button, TextInput, ScrollView, Alert } from 'react-native';
+import { StyleSheet, Text, View, FlatList, Button, TextInput, ScrollView, Alert, TouchableHighlight, Modal, Pressable } from 'react-native';
 import { useState } from 'react';
 
 let productos = [
@@ -16,6 +16,9 @@ let esNuevo = true;
 let indiceSeleccionado = -1;
 
 export default function App() {
+  const [modalVisible, setModalVisible] = useState(false);
+
+
   const [txtNombre, setTxtNombre] = useState();
   const [txtCategoria, setCategoria] = useState();
   const [txtPrecioCompra, setPrecioCompra] = useState();
@@ -84,84 +87,127 @@ export default function App() {
 
 
   //crear componente
-  let ItemProducto = (props) => {
+  const ItemProducto = ({ indice, producto }) => {
     return (
+
       <View style={styles.itemProductos}>
+        <Modal
+          animationType="slide"
+          transparent={true}
+          visible={modalVisible}
+          onRequestClose={() => {
+            Alert.alert('Modal has been closed.');
+            setModalVisible(!modalVisible);
+          }}>
+          <View style={styles.centeredView}>
+            <View style={styles.modalView}>
+              <Text style={styles.modalText}>¿Está seguro que quiere eliminar?</Text>
+              <View style={styles.areaBotones}>
+                <Button
+                  title="Aceptar"
+                  color="green"
+                  onPress={() => {
+                    productos.splice(indiceSeleccionado, 1);
+                    setNumElemento(productos.length);
+                    setModalVisible(false);
+                  }}
+                >
+                  <Text >Aceptar</Text>
+                </Button>
+                <Button
+                  title="Cancelar"
+                  color="red"
+                  onPress={() => {
+                    setModalVisible(false);
+                  }}
+                >
+                  <Text>Cancelar</Text>
+                </Button>
+              </View>
+            </View>
+          </View>
+        </Modal>
+
         <View style={styles.areId}>
           <Text style={styles.textoSecundario}>
-            {props.producto.id} </Text>
+            {producto.id} </Text>
         </View>
         <View style={styles.areNombreCat}>
-          <Text style={styles.textoSecundario}>{props.producto.nombre} </Text>
-          <Text style={styles.textoCategoria}>{props.producto.categoria}</Text>
+          <Text style={styles.textoSecundario}>{producto.nombre} </Text>
+          <Text style={styles.textoCategoria}>{producto.categoria}</Text>
         </View>
         <View style={styles.areUsd}>
-          <Text style={styles.textoTercsario}> USD {props.producto.precioVenta}</Text>
+          <Text style={styles.textoTercsario}> USD {producto.precioVenta}</Text>
         </View>
+
         <View style={styles.itemBotones}>
-          <Button
-            title=" E "
-            color="green"
+          <TouchableHighlight
+            activeOpacity={0.6}
+            underlayColor="#DDDDDD"
             onPress={() => {
               //pitar en la cajas de texto
-              setId(props.producto.id);
-              setTxtNombre(props.producto.nombre);
-              setCategoria(props.producto.categoria);
-              setPrecioCompra(props.producto.precioCompra);
-              setPrecioVenta(props.producto.precioVenta);
+              setId(producto.id);
+              setTxtNombre(producto.nombre);
+              setCategoria(producto.categoria);
+              setPrecioCompra(producto.precioCompra);
+              setPrecioVenta(producto.precioVenta);
 
               esNuevo = false;
-              indiceSeleccionado = props.indice;
+              indiceSeleccionado = indice;
 
-            }}
-          />
+            }}>
+            <Text style={styles.textBoton}>E</Text>
+
+          </TouchableHighlight>
+
           <Button
             title=" X "
             color="red"
             onPress={() => {
-              indiceSeleccionado = props.indice;
-              //elimina desde inidice selecciona hasta el numero que le coloquemos
-              productos.splice(indiceSeleccionado, 1);
-              setNumElemento(productos.length)
+              setModalVisible(true);
+              indiceSeleccionado = indice;
             }}
-          />
+          >
+          </Button>
         </View>
       </View>
-    )
-  }
-
+    );
+  };
   return (
 
     <View style={styles.container}>
-
-
-
       <View style={styles.areCabecera}><Text style={styles.textoPrincipal}>PRODUCTOS!</Text>
         <ScrollView style={styles.areScrollView}>
 
           <TextInput style={styles.cajaTexto}
             value={txtId}
             placeholder='CODIGO'
-            onChangeText={setId}
+            onChangeText={txt => {
+              setId(txt)
+            }}
             keyboardType='numeric'
             editable={esNuevo}
           />
           <TextInput style={styles.cajaTexto}
             value={txtNombre}
             placeholder='NOMBRE'
-            onChangeText={setTxtNombre}
+            onChangeText={txt => {
+              setTxtNombre(txt)
+            }}
           />
           <TextInput style={styles.cajaTexto}
             value={txtCategoria}
             placeholder='CATEGORIA'
-            onChangeText={setCategoria}
+            onChangeText={txt => {
+              setCategoria(txt);
+            }}
           />
           <TextInput
             style={styles.cajaTexto}
             value={txtPrecioCompra}
             placeholder='PRECIO DE COMPRA'
             keyboardType='numeric'
-            onChangeText={(txt) => {
+            onChangeText={txt => {
               setPrecioCompra(txt);
               setPrecioVenta(calcularPrecioVenta(txt));
             }}
@@ -170,7 +216,9 @@ export default function App() {
             style={styles.cajaTexto}
             value={txtPrecioVenta}
             placeholder='PRECIO DE VENTA'
-            onChangeText={setPrecioVenta}
+            onChangeText={txt => {
+              setTxtCedula(txt)
+            }}
             editable={false}
           />
 
@@ -198,17 +246,16 @@ export default function App() {
       <View style={styles.areaContenido}>
         <FlatList
           data={productos}
-          renderItem={(elemento) => {//funcion para pintar cada elemento
+          renderItem={({ index, item }) => {//funcion para pintar cada elemento
             return (
               <ItemProducto
-                indice={elemento.index}
-                producto={elemento.item}
+                indice={index}
+                producto={item}
               />);
 
           }}
-          keyExtractor={(item) => {
-            return item.id;
-          }}
+          keyExtractor={item => item.id}
+
         />
       </View>
 
@@ -285,7 +332,7 @@ const styles = StyleSheet.create({
   },
   areUsd: {
     flex: 3,
-   // backgroundColor: "yellow",
+    // backgroundColor: "yellow",
     justifyContent: "center"
   },
 
@@ -294,7 +341,8 @@ const styles = StyleSheet.create({
     //backgroundColor: "cornsilk",
     flexDirection: "row",
     alignItems: "center",
-    justifyContent: "space-between"
+    justifyContent: "space-between",
+
   },
   cajaTexto: {
     borderWidth: 2,
@@ -317,5 +365,30 @@ const styles = StyleSheet.create({
   },
   areScrollView: {
     flexGrow: 1,
-  }
+  },
+  textBoton: {
+    backgroundColor: "green",
+    paddingVertical: 7,
+    paddingHorizontal: 10,
+    marginBottom: 5,
+
+  },
+
+  //para el modal editar depues
+  centeredView: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginTop: 20,
+  },
+  modalView: {
+    backgroundColor: 'white',
+    borderRadius: 10,
+    alignItems: 'center',
+    shadowColor: '#000',
+   },
+  modalText: {
+    marginBottom: 15,
+    textAlign: 'center',
+  },
 });
