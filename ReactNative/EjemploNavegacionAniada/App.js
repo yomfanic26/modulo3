@@ -24,7 +24,6 @@ function PrincipalScreen() {
     </stack.Navigator>
   );
 }
-
 export default function App() {
   return (
     <NavigationContainer>
